@@ -1,45 +1,52 @@
-import { UpdateHardwarePipesDto } from './pipes/update.hardware.pipes.dto';
+import { Hardware } from './hardware.entity';
 import { CreateHardwareDto } from './dto/create-hardware.dto';
-import { Hardware, HardwareType } from './hardware.model';
-import { Controller, Get, Post, Body, Param, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UsePipes, ValidationPipe, ParseIntPipe } from '@nestjs/common';
 import { HardwareService } from './hardware.service';
-import { CreateHardwarePipesDto } from './pipes/create-hardware.pipes.dto';
-import { UpdateHardwareDto } from './dto/update.hardware.dto';
+import { FilterHardwareDto } from './dto/filter-hardware.dto';
 
 @Controller('hardware')
 export class HardwareController {
 	constructor(private hardwareService: HardwareService) {}
 
-	@Get('/')
-	getAllHardware(): Hardware[] {
-		return this.hardwareService.getAllHardwares();
-	}
-	@Post('/:id')
-	deleteHardwareById(@Param('id') id: string): void {
-		return this.hardwareService.deleteHardwareById(id);
-	}
-
-	@Post('/')
-	@UsePipes(CreateHardwarePipesDto, ValidationPipe)
-	createHardware(@Body() hardware: CreateHardwareDto): Hardware {
+	/* Create New Hardware */
+	@Post()
+	@UsePipes(ValidationPipe)
+	createHardware(@Body() hardware: CreateHardwareDto) {
 		return this.hardwareService.createHardware(hardware);
 	}
-	@Post('/:id/edit')
+
+	/* Get All Hardwares  && Get Filtered Hardwares */
+	@Get()
+	async getHardwares(@Query() filterDto: FilterHardwareDto): Promise<Hardware[]> {
+		return await this.hardwareService.getHardwares(filterDto);
+	}
+
+	/* Get Hardware By Id */
+	@Get(':id')
+	async getHardwareById(
+		@Param('id', ParseIntPipe)
+		id: number
+	): Promise<Hardware> {
+		return await this.hardwareService.getHardwareById(id);
+	}
+
+	/* Update Hardware By Id */
+	@Post(':id/edit')
 	@UsePipes(ValidationPipe)
 	updateHardwareById(
-		@Param('id') id: string,
-		@Body(UpdateHardwarePipesDto, ValidationPipe)
-		hardware: UpdateHardwareDto
+		@Param('id', ParseIntPipe)
+		id: number,
+		@Body(ValidationPipe) hardware: Hardware
 	) {
 		return this.hardwareService.updateHardwareById(id, hardware);
 	}
 
-	@Get('/search')
-	serachHardwareByType(@Query('type') type: HardwareType): Hardware[] {
-		return this.hardwareService.serachHardwareByType(type);
-	}
-	@Get('/:id')
-	getHardwareById(@Param('id') id: string): Hardware {
-		return this.hardwareService.getHardwareById(id);
+	/* Delete Hardware By Id */
+	@Post(':id')
+	async deleteHardwareById(
+		@Param('id', ParseIntPipe)
+		id: number
+	): Promise<object> {
+		return await this.hardwareService.deleteHardwareById(id);
 	}
 }

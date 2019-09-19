@@ -1,5 +1,4 @@
-import { Hardware } from './../hardware.model';
-import { HardwareStatus } from './../hardware.model';
+import { HardwareStatus } from '../hardware.enums';
 import { Injectable, PipeTransform, ArgumentMetadata, BadRequestException } from '@nestjs/common';
 
 @Injectable()
@@ -17,7 +16,7 @@ export class UpdateHardwarePipesDto implements PipeTransform {
 		}
 		return value;
 	}
-	private checkStatus(hardware: Hardware) {
+	private checkStatus(hardware) {
 		return this.status.includes(hardware.status);
 	}
 }

@@ -1,8 +1,7 @@
-import { HardwareStatus } from '../hardware.enums';
-import { HardwareType } from '../hardware.enums';
-import { MaxLength, IsEnum, MinLength, IsDateString } from 'class-validator';
+import { HardwareStatus, HardwareType } from '../hardware.enums';
+import { MinLength, MaxLength, IsEnum, IsDateString, IsString } from 'class-validator';
 
-export class CreateHardwareDto {
+export class FilterHardwareDto {
 	@MinLength(3, { message: 'serial number must at least 3 character' })
 	@MaxLength(15, { message: 'serial number must less than 15 character' })
 	readonly serialNumber: string;
@@ -15,4 +14,6 @@ export class CreateHardwareDto {
 
 	@IsDateString({ message: 'not a valid date' })
 	readonly lastRepair: Date;
+
+	@IsString() readonly search: string;
 }

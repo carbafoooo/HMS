@@ -1,57 +1,46 @@
+import { Hardware } from './hardware.entity';
+import { HardwareRepository } from './hardware.repository';
 import { CreateHardwareDto } from './dto/create-hardware.dto';
-import { Hardware, HardwareType } from './hardware.model';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import uuid = require('uuid');
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FilterHardwareDto } from './dto/filter-hardware.dto';
 
 @Injectable()
 export class HardwareService {
-	private hardwares: Hardware[] = [];
+	constructor(@InjectRepository(HardwareRepository) private hardwareRepository: HardwareRepository) {}
 
-	getAllHardwares(): Hardware[] {
-		return this.hardwares;
+	/* Create New Hardware */
+	createHardware(hardware: CreateHardwareDto) {
+		return this.hardwareRepository.createHardware(hardware);
 	}
 
-	getHardwareById(id: string): Hardware {
-		const found = this.hardwares.find((item) => item.id === id);
+	/* Get All Hardwares  && Get Filtered Hardwares */
+	async getHardwares(filterDto: FilterHardwareDto): Promise<Hardware[]> {
+		return await this.hardwareRepository.getHardwares(filterDto);
+	}
+	/* Get Hardware By Id */
+	async getHardwareById(id: number): Promise<Hardware> {
+		const found = await this.hardwareRepository.findOne(id);
 		if (!found) {
-			throw new NotFoundException(`item with id: ${id} is not found`);
+			throw new BadRequestException('hardware with this `${id}` not found');
 		}
 		return found;
 	}
-
-	deleteHardwareById(id: string): void {
-		this.getHardwareById(id);
-		const idx = this.hardwares.findIndex((item) => item.id === id);
-		this.hardwares.splice(idx, 1);
-	}
-
-	updateHardwareById(id: string, hardware: Hardware): Hardware {
-		const found: Hardware = this.getHardwareById(id);
-		if (!found) {
-			throw new NotFoundException('item not found');
+	/* Delete Hardware By Id */
+	async deleteHardwareById(id: number): Promise<object> {
+		const item = await this.hardwareRepository.deleteHardwareById(id);
+		if (item.affected === 0) {
+			throw new BadRequestException('hardware with this `${id}` not found');
 		}
-		found.id = id;
-		found.type = hardware.type;
-		found.serialNumber = hardware.serialNumber;
-		found.lastRepair = hardware.lastRepair;
-		found.status = hardware.status;
-
-		return found;
+		return { message: ' item deleted successfull...' };
 	}
 
-	serachHardwareByType(type: HardwareType): Hardware[] {
-		return this.hardwares.filter((item) => item.type === type);
-	}
-	createHardware(hardware: CreateHardwareDto): Hardware {
-		const newHrdware: Hardware = {
-			id: uuid(),
-			serialNumber: hardware.serialNumber,
-			type: hardware.type,
-			status: hardware.status,
-			lastRepair: hardware.lastRepair
-		};
-
-		this.hardwares.push(newHrdware);
-		return newHrdware;
+	/* Update Hardware By Id */
+	async updateHardwareById(id: number, hardware: Hardware): Promise<string> {
+		const item = await this.hardwareRepository.updateHarwareById(id, hardware);
+		if (item.affected === 0) {
+			throw new BadRequestException('hardware with this `${id}` not found');
+		}
+		return `Item with id: ${id} updated`;
 	}
 }

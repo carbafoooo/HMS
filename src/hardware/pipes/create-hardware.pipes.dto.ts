@@ -1,5 +1,4 @@
-import { Hardware } from 'dist/hardware/hardware.modal';
-import { HardwareType } from './../hardware.model';
+import { HardwareType } from '../hardware.enums';
 import { PipeTransform, ArgumentMetadata, BadRequestException } from '@nestjs/common';
 
 export class CreateHardwarePipesDto implements PipeTransform {
@@ -19,7 +18,7 @@ export class CreateHardwarePipesDto implements PipeTransform {
 		return hardware;
 	}
 
-	private checkType(hardware: Hardware) {
+	private checkType(hardware) {
 		return this.type.includes(hardware.type);
 	}
 }
